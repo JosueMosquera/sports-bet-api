@@ -37,8 +37,7 @@ export class Match {
   teamBimage: string;
 
   @Column({
-    type: 'timestamp',
-    default: () => 'NOW()',
+    type: 'datetime',
     nullable: true,
   })
   matchDate: Date;
