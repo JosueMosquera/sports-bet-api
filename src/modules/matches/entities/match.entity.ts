@@ -38,6 +38,7 @@ export class Match {
 
   @Column({
     type: 'timestamp',
+    default: () => 'NOW()',
     nullable: false,
   })
   matchDate: Date;
