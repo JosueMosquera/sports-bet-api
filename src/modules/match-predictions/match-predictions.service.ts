@@ -44,7 +44,7 @@ export class MatchPredictionsService {
 
   async findOne(id: number) {
     return await this.matchPredictionsRepo.findOne(id, {
-      relations: ['match'],
+      relations: ['match', 'transaction', 'userId'],
     });
   }
 
@@ -78,8 +78,20 @@ export class MatchPredictionsService {
   }
 
   async remove(id: number) {
-    const matchToUpdate = await this.matchPredictionsRepo.findOne(id);
-    const findMatch = await this.matchesService.findOne(matchToUpdate.match);
+    const matchToUpdate = await this.matchPredictionsRepo.findOne(id, {
+      relations: ['userId', 'match', 'transaction'],
+    });
+    let matchWithRelations: any = matchToUpdate;
+    const findMatch = await this.matchesService.findOne(
+      matchWithRelations.match.id,
+    );
+
+    await this.creditService.create({
+      ammount: matchWithRelations.transaction.ammount,
+      creditCardCode: matchWithRelations.transaction.creditCardCode,
+      type: 'INGRESO',
+      userId: matchWithRelations.userId.id,
+    });
     await this.matchesService.update(findMatch.id, { isBeted: false });
     return await this.matchPredictionsRepo.delete(id);
   }

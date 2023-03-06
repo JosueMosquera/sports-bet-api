@@ -25,6 +25,11 @@ export class CreditsController {
     return this.creditsService.findAll();
   }
 
+  @Get('/by-user/:userId')
+  findAllByUser(@Param('userId') userId: string) {
+    return this.creditsService.findAllByUser(+userId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.creditsService.findOne(+id);

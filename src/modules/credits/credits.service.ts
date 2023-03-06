@@ -35,6 +35,10 @@ export class CreditsService {
     return `This action returns all credits`;
   }
 
+  async findAllByUser(userId: number) {
+    return this.creditRepo.find({ where: { userId } });
+  }
+
   async findOne(id: number) {
     return await this.creditRepo.findOne(id);
   }

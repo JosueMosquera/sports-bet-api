@@ -39,7 +39,6 @@ export class Credit {
   })
   isDeleted: boolean;
 
-  @Exclude()
   @CreateDateColumn({
     type: 'timestamp',
   })
