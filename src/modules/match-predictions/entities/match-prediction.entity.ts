@@ -72,11 +72,4 @@ export class MatchPredictions {
     type: 'timestamp',
   })
   updatedAt: Date;
-
-  @BeforeUpdate()
-  async setDeletedAt() {
-    if (this.isDeleted) {
-      this.deletedAt = new Date();
-    }
-  }
 }

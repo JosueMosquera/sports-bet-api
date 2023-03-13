@@ -25,7 +25,7 @@ export class MatchesService {
   }
 
   async findAll() {
-    return await this.matchRepo.find();
+    return await this.matchRepo.find({ relations: ['teamA', 'teamB'] });
   }
 
   async findOne(id: number) {
@@ -34,11 +34,20 @@ export class MatchesService {
 
   async update(id: number, updateMatchDto: UpdateMatchDto) {
     const matchToChange = await this.findOne(id);
-    await this.matchRepo.update(matchToChange.id, updateMatchDto);
+    await this.matchRepo.update(
+      { id: matchToChange.id },
+      { ...updateMatchDto },
+    );
+
     if (updateMatchDto.isMatchFinished) {
       const matches = await this.matchPredictionsService.findAll();
+
       matches.forEach(async (prediction: any) => {
-        if (matchToChange.result === 'isTeamAwins' && prediction.isTeamAwins) {
+        if (
+          updateMatchDto.result === 'isTeamAwins' &&
+          prediction.isTeamAwins &&
+          matchToChange.id === prediction.match.id
+        ) {
           const ammount =
             prediction.transaction &&
             prediction.transaction.ammount * matchToChange.betOffer;
@@ -48,22 +57,39 @@ export class MatchesService {
             type: 'INGRESO',
             userId: prediction.userId.id,
           });
+          await this.matchRepo.update(matchToChange.id, { isWined: true });
         }
-        if (matchToChange.result === 'isTeamBwins' && prediction.isTeamBwins) {
+        if (
+          updateMatchDto.result === 'isTeamBwins' &&
+          prediction.isTeamBwins &&
+          matchToChange.id === prediction.match.id
+        ) {
+          const ammount =
+            prediction.transaction &&
+            prediction.transaction.ammount * matchToChange.betOffer;
           await this.creditService.create({
-            ammount: updateMatchDto.ammount * matchToChange.betOffer,
-            creditCardCode: updateMatchDto.creditCardCode,
+            ammount,
+            creditCardCode: prediction.transaction.creditCardCode,
             type: 'INGRESO',
-            userId: updateMatchDto.userId,
+            userId: prediction.userId.id,
           });
+          await this.matchRepo.update(matchToChange.id, { isWined: true });
         }
-        if (matchToChange.result === 'isAdraft' && prediction.isAdraft) {
+        if (
+          updateMatchDto.result === 'isAdraft' &&
+          prediction.isAdraft &&
+          matchToChange.id === prediction.match.id
+        ) {
+          const ammount =
+            prediction.transaction &&
+            prediction.transaction.ammount * matchToChange.betOffer;
           await this.creditService.create({
-            ammount: updateMatchDto.ammount * matchToChange.betOffer,
-            creditCardCode: updateMatchDto.creditCardCode,
+            ammount,
+            creditCardCode: prediction.transaction.creditCardCode,
             type: 'INGRESO',
-            userId: updateMatchDto.userId,
+            userId: prediction.userId.id,
           });
+          await this.matchRepo.update(matchToChange.id, { isWined: true });
         }
       });
     }

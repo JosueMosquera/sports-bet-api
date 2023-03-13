@@ -15,15 +15,21 @@ export class CreditsService {
   ) {}
   async create(createCreditDto: CreateCreditDto) {
     const newCredit = this.creditRepo.create(createCreditDto);
-    await this.creditRepo.save(newCredit);
     const user = await this.authService.findOne(newCredit.userId);
+
+    await this.creditRepo.save(newCredit);
     if (newCredit.type === 'INGRESO') {
       await this.authService.update(newCredit.userId, {
         availableCredits: user.availableCredits + newCredit.ammount,
+        creditCardCode: newCredit.creditCardCode,
       });
-    } else if (newCredit.type === 'DEBITO') {
+    } else if (
+      newCredit.type === 'DEBITO' &&
+      user.availableCredits >= newCredit.ammount
+    ) {
       await this.authService.update(newCredit.userId, {
         availableCredits: user.availableCredits - newCredit.ammount,
+        creditCardCode: newCredit.creditCardCode,
       });
     }
     return {

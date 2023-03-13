@@ -4,41 +4,20 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Entity,
-  BeforeUpdate,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { Team } from 'src/modules/teams/entities/team.entity';
 
 @Entity('matches')
 export class Match {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column({
-    type: 'varchar',
-    nullable: false,
-  })
-  teamA: string;
-
-  @Column({
-    type: 'varchar',
-    nullable: false,
-  })
-  teamAimage: string;
-
-  @Column({
-    type: 'varchar',
-    nullable: false,
-  })
-  teamB: string;
-
-  @Column({
-    type: 'varchar',
-    nullable: false,
-  })
-  teamBimage: string;
 
   @Column({
     nullable: false,
-    default: () => new Date(),
     type: 'timestamp',
   })
   matchDate: Date;
@@ -69,6 +48,13 @@ export class Match {
     nullable: false,
   })
   isBeted: boolean;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+    nullable: false,
+  })
+  isWined: boolean;
 
   @Column({
     type: 'varchar',
@@ -102,10 +88,9 @@ export class Match {
   })
   updatedAt: Date;
 
-  @BeforeUpdate()
-  async setDeletedAt() {
-    if (this.isDeleted) {
-      this.deletedAt = new Date();
-    }
-  }
+  @ManyToOne(() => Team, (team) => team.id)
+  teamA: number;
+
+  @ManyToOne(() => Team, (team) => team.id)
+  teamB: number;
 }

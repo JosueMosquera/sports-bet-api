@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { error } from 'console';
+import { throwError } from 'rxjs';
 import { Repository } from 'typeorm';
+import { AuthService } from '../auth/auth.service';
 import { CreditsService } from '../credits/credits.service';
 import { MatchesService } from '../matches/matches.service';
 import { CreateMatchPredictionDto } from './dto/create-match-prediction.dto';
@@ -14,6 +17,7 @@ export class MatchPredictionsService {
     private matchPredictionsRepo: Repository<MatchPredictions>,
     private creditService: CreditsService,
     private matchesService: MatchesService,
+    private authService: AuthService,
   ) {}
   async create(createMatchPredictionDto: CreateMatchPredictionDto) {
     const newMatchPrediction = this.matchPredictionsRepo.create(
@@ -22,23 +26,36 @@ export class MatchPredictionsService {
     const matchToUpdate = await this.matchesService.findOne(
       createMatchPredictionDto.match,
     );
-    await this.matchesService.update(matchToUpdate.id, { isBeted: true });
-    const newCredit = await this.creditService.create({
-      ammount: createMatchPredictionDto.ammount,
-      creditCardCode: createMatchPredictionDto.creditCardCode,
-      type: 'DEBITO',
-      userId: createMatchPredictionDto.userId,
-    });
-    newMatchPrediction.transaction = newCredit.createdCredit.id;
-    await this.matchPredictionsRepo.save(newMatchPrediction);
-    return {
-      newMatch: newMatchPrediction,
-    };
+    const user = await this.authService.findOne(
+      createMatchPredictionDto.userId,
+    );
+    if (user.availableCredits >= createMatchPredictionDto.ammount) {
+      await this.matchesService.update(matchToUpdate.id, { isBeted: true });
+      const newCredit = await this.creditService.create({
+        ammount: createMatchPredictionDto.ammount,
+        creditCardCode: user.creditCardCode,
+        type: 'DEBITO',
+        userId: createMatchPredictionDto.userId,
+      });
+      newMatchPrediction.transaction = newCredit.createdCredit.id;
+      await this.matchPredictionsRepo.save(newMatchPrediction);
+      return {
+        newMatch: newMatchPrediction,
+      };
+    } else {
+      throw new Error('creditos insuficientes');
+    }
   }
 
   async findAll() {
     return await this.matchPredictionsRepo.find({
-      relations: ['match', 'transaction', 'userId'],
+      relations: [
+        'match',
+        'transaction',
+        'userId',
+        'match.teamA',
+        'match.teamB',
+      ],
     });
   }
 
@@ -72,6 +89,7 @@ export class MatchPredictionsService {
         isTeamBwins: false,
       });
     }
+
     return {
       matchToChange,
     };

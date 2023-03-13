@@ -20,6 +20,11 @@ export class UpdateMatchDto extends PartialType(CreateMatchDto) {
   isBeted?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  @ApiProperty()
+  isWined?: boolean;
+
+  @IsOptional()
   @IsString()
   @ApiProperty()
   result?: string;

@@ -2,21 +2,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsPositive, IsString } from 'class-validator';
 
 export class CreateMatchDto {
-  @IsString()
+  @IsPositive()
   @ApiProperty()
-  teamA: string;
+  teamA: number;
 
-  @IsString()
+  @IsPositive()
   @ApiProperty()
-  teamAimage: string;
-
-  @IsString()
-  @ApiProperty()
-  teamB: string;
-
-  @IsString()
-  @ApiProperty()
-  teamBimage: string;
+  teamB: number;
 
   @IsDate()
   @ApiProperty()

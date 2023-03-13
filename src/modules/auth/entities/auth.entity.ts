@@ -32,6 +32,20 @@ export class User {
   userEmail: string;
 
   @Column({
+    type: 'varchar',
+    nullable: false,
+    default: 'not registered yet',
+  })
+  creditCardCode: string;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+    nullable: false,
+  })
+  isAdmin: boolean;
+
+  @Column({
     type: 'float',
     nullable: false,
     default: 0,
@@ -62,11 +76,4 @@ export class User {
     type: 'timestamp',
   })
   updatedAt: Date;
-
-  @BeforeUpdate()
-  async setDeletedAt() {
-    if (this.password) {
-      this.deletedAt = new Date();
-    }
-  }
 }

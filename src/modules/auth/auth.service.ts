@@ -49,8 +49,12 @@ export class AuthService {
     const availableCredits = await this.authRepo.update(id, {
       availableCredits: updateAuthDto.availableCredits,
     });
+    const creditCardCode = await this.authRepo.update(id, {
+      creditCardCode: updateAuthDto.creditCardCode,
+    });
     return {
       availableCredits,
+      creditCardCode,
     };
   }
 
