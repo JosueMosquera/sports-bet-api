@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CreditsModule } from './modules/credits/credits.module';
 import { MatchPredictionsModule } from './modules/match-predictions/match-predictions.module';
 import { MatchesModule } from './modules/matches/matches.module';
+import { TeamsModule } from './modules/teams/teams.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MatchesModule } from './modules/matches/matches.module';
     MatchesModule,
     MatchPredictionsModule,
     CreditsModule,
+    TeamsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
